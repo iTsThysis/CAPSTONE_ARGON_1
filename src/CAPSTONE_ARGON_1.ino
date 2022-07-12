@@ -1,6 +1,8 @@
 SYSTEM_MODE(MANUAL)
 SYSTEM_THREAD(ENABLED)
 
+int i = 0;
+
 #include "oled-wing-adafruit.h"
 OledWingAdafruit display;
 
@@ -57,11 +59,17 @@ void loop()
   {
     //setting color to blue
     RGB.color(0, 0, 255);
+    BLE.stopAdvertising();
+    while (i < 5) {
+      uint8_t txBuf[UART_TX_BUF_SIZE];
+      String message = "Hello there!\n";
+      message.toCharArray((char *)txBuf, message.length() + 1);
+      txCharacteristic.setValue(txBuf, message.length() + 1);
+      i = i + 1;
+      delay(1000);
+    }
     
-    /*uint8_t txBuf[UART_TX_BUF_SIZE];
-    String message = "Hello!\n";
-    message.toCharArray((char *)txBuf, message.length() + 1);
-    txCharacteristic.setValue(txBuf, message.length() + 1);*/
+    
 
   } else {
     RGB.color(255, 255, 0);
@@ -82,7 +90,8 @@ void onDataReceived(const uint8_t *data, size_t len, const BlePeerDevice &peer, 
     } else if (data[i] == 48) {
       RGB.color(255, 255, 0);
       BLE.disconnect();
-      
+      BLE.advertise();
+      i = 0;
     }
   }
 }
